@@ -1,0 +1,43 @@
+# Automatically generated. Not recommended to edit
+config DEPLOY_AVRDUDE
+bool "avrdude"
+
+config DEPLOY_DFU_PROGRAMMER
+bool "dfu-programmer"
+
+config DEPLOY_DFUUTIL
+bool "dfuutil"
+
+config DEPLOY_ESPTOOL
+bool "esptool"
+
+config DEPLOY_MSPDEBUG
+bool "mspdebug"
+
+config DEPLOY_NRFDUDE
+bool "nrfdude"
+
+config DEPLOY_OPENOCD
+bool "openocd"
+
+config DEPLOY_RF24TOOL
+bool "rf24tool"
+
+config DEPLOY_RUN
+bool "run"
+
+config DEPLOY_STCDUDE
+bool "stcdude"
+
+config DEPLOY_STLINK
+bool "stlink"
+
+config DEPLOY_STM32FLASH
+bool "stm32flash"
+
+config DEPLOY_UISPTOOL
+bool "uisptool"
+
+config DEPLOY_ZMODEM
+bool "zmodem"
+

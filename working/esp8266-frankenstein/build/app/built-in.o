@@ -1,0 +1,1 @@
+main.o stdio.o helpers.o microrl.o console.o hostname.o env.o cb.o telnet.o cmd_common.o cmd_env.o uart.o cmd_iw.o cmd_uart.o cmd_ifconfig.o cmd_gpio.o cmd_flash.o cmd_listen.o cmd_send.o cmd_ds18b20.o cmd_tftp.o tftp.o netapps//built-in.o lwip/built-in.o

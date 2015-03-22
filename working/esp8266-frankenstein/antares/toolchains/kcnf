@@ -1,0 +1,27 @@
+config SHOW_ALL_TOOLCHAINS
+bool "Show all toolchains"
+
+#TODO: clang-llvm here
+
+choice 
+prompt "Toolchain selection"
+
+config TOOLCHAIN_GCC
+depends on SHOW_ALL_TOOLCHAINS || ARCH_AVR || ARCH_ARM || ARCH_MSP430 || ARCH_MIPS || \
+	ARCH_NATIVE || ARCH_PIC32 || ARCH_ESP8266
+
+bool "GCC-based toolchain"
+
+config TOOLCHAIN_SDCC
+depends on ARCH_8051 || ARCH_GBZ80 || SHOW_ALL_TOOLCHAINS
+bool "SDCC-based toolchain"
+
+endchoice
+
+if TOOLCHAIN_GCC
+source "antares/toolchains/gcc.kcnf"
+endif
+
+if TOOLCHAIN_SDCC
+source "antares/toolchains/sdcc.kcnf"
+endif  

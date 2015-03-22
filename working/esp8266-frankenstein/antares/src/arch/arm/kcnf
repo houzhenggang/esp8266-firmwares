@@ -1,0 +1,15 @@
+if ARCH_ARM
+choice 
+	prompt "MCU variant"
+	config MCU_STM32
+	bool "STM32"
+	select NEED_GENERATE
+endchoice
+
+
+if MCU_STM32
+source "antares/src/arch/arm/stm32/kcnf"
+endif
+
+
+endif

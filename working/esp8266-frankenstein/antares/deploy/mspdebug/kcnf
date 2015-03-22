@@ -1,0 +1,15 @@
+menuconfig DEPLOY_MSPDEBUG
+bool "mspdebug"
+depends on ARCH_MSP430
+
+if DEPLOY_MSPDEBUG
+  config DEPLOY_MSPDEBUG_ROOT
+  bool "Run mspdebug as root"
+
+  choice 
+  prompt "Select mspdebug driver"  
+  source "antares/deploy/mspdebug/drv_selection.kcnf"
+
+  endchoice
+
+endif

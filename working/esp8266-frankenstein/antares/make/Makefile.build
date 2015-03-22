@@ -1,0 +1,122 @@
+#This is a makefile used in the actual build stuff. The rest is defined in per
+#toolchain files and in arch.mk of the target arch. 
+
+.SUFFIXES:
+
+include $(TOPDIR)/.config
+include $(ANTARES_DIR)/make/Makefile.lib
+include $(SRCDIR)/Makefile
+# VPATH = $(SRCDIR)
+
+
+RELPATH = $(patsubst $(ANTARES_DIR)/%,%,$(SRCDIR))
+#For retarded sdcc cases
+objects-y:=$(patsubst %.o,%.$(O),$(objects-y))
+objects-y+=$(foreach dir,$(subdirs-y),$(dir)/built-in.$(O))
+recurse+=$(foreach dir,$(subdirs-y),$(dir)/built-in.$(O)-recurse)
+gen-y+=$(foreach dir,$(subdirs-y),$(dir)/.genned)
+PHONY+=$(recurse)
+clean-y+=$(foreach dir,$(subdirs-y),$(dir)/built-in.$(O))
+
+#suck in dep files (if any)
+-include $(OBJDIR)/*.d
+
+PHONY:= build clean generate .genned built-in.$(O)
+
+define recurse_make
+	$(Q)$(MAKE) TOPDIR=$(TOPDIR) OBJDIR=$(OBJDIR)/$(NEXT) \
+	SRCDIR=$(SRCDIR)/$(NEXT) TMPDIR=$(TMPDIR) \
+	-C $(OBJDIR)/$(NEXT) \
+	-f $(ANTARES_DIR)/make/Makefile.build -r $(1)	
+endef
+
+# This adds extra processing for source files. 
+# We can add as many hooks here, as we want this way. 
+# Just note, that each one slows down build
+
+define extra_proc
+extras+=%.$(O).$(1)
+PRECIOUS+=%.$(O).$(1)
+%.$(O).$(1): $(SRCDIR)/%.S
+	$(2)
+	$(SILENT_EXTRA) touch $$(@)
+%.$(O).$(1): $(SRCDIR)/%.c
+	$(2)	
+	$(SILENT_EXTRA) touch $$(@)
+%.$(O).$(1): $(SRCDIR)/%.S
+	$(2)
+	$(SILENT_EXTRA) touch $$(@)
+endef
+
+# If a sucky compiler can't do some section magic (sdcc, sic!)
+# We will make use of hacky scripts to make ANTARES_INIT_* macros work
+# This will take care of collecting all the required definitions from 
+# source files and generate a dummy with main() that will call all our
+# stuff in order. 
+
+ifeq ($(TOOLCHAIN_LACKS_SECTION_MAGIC),y)
+ifeq ($(CONFIG_ANTARES_STARTUP),y)
+$(eval $(call extra_proc,a_init_low,\
+	$(Q) cat $$< | grep ANTARES_INIT_LOW|cut -d"(" -f2|cut -d")" -f1 > $$(@)\
+	))
+
+$(eval $(call extra_proc,a_init_high,\
+	$(Q) cat $$< | grep ANTARES_INIT_HIGH|cut -d"(" -f2|cut -d")" -f1 > $$(@)\
+	))
+
+$(eval $(call extra_proc,a_app,\
+	$(Q) cat $$< | grep ANTARES_APP|cut -d"(" -f2|cut -d")" -f1 > $$(@)\
+	))
+
+$(eval $(call extra_proc,a_fini,\
+	$(Q) cat $$< | grep ANTARES_FINISH|cut -d"(" -f2|cut -d")" -f1 > $$(@)\
+	))
+endif
+endif
+
+.genned: $(TOPDIR)/include/generated/autoconf.h $(gen-y)
+	$(Q) touch $(@)
+
+%/.genned: $(TOPDIR)/include/generated/autoconf.h
+	$(eval NEXT=$(subst $(OBJDIR)/,,$*))
+	$(eval PHONY+=$(NEXT)/built-in.$(O))
+	$(Q)mkdir -p $(OBJDIR)/$(NEXT)
+	+$(call recurse_make,generate)
+
+%/built-in.$(O)-recurse: $(TOPDIR)/include/generated/autoconf.h
+	$(eval NEXT=$(subst $(OBJDIR)/,,$*))
+	$(eval PHONY+=$(NEXT)/built-in.$(O))
+	$(Q)mkdir -p $(OBJDIR)/$(NEXT)
+	+$(call recurse_make,build)
+
+%/built-in.$(O): $(TOPDIR)/include/generated/autoconf.h %/built-in.$(O)-recurse 
+	@echo > /dev/null
+
+%.$(O): $(SRCDIR)/%.c $(extras)
+	$(SILENT_CC) $(CC) $(CFLAGS) $(cflags-y) $(GENDEPFLAGS) -c  -o $(@) $< 
+
+%.$(O): $(SRCDIR)/%.S $(extras)
+	$(SILENT_AS) $(AS) $(ASFLAGS) $(asflags-y) $(GENDEPFLAGS) -c -o $(@) $< 
+
+build: built-in.$(O)
+	@echo > /dev/null
+
+generate: .genned
+	@echo > /dev/null
+
+ifneq ($(LD_NO_COMBINE),y)
+ifeq ($(objects-y),)
+built-in.$(O): 
+	$(SILENT_AR) $(AR) c$(ARFLAGS) $@
+else
+built-in.$(O): $(objects-y)
+	$(SILENT_LD) $(LD) -r -o $(@) $^ 
+endif
+else
+built-in.$(O): $(objects-y) $(recurse)
+	$(SILENT_GEN) echo "$(objects-y)" > $@
+endif
+
+
+.PRECIOUS: $(PRECIOUS) 
+.PHONY: $(PHONY)

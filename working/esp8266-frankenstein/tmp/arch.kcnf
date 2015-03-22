@@ -1,0 +1,33 @@
+# Automatically generated. Not recommended to edit
+config ARCH_8051
+bool "8051"
+select ARCH_HAS_ANTARES_STARTUP
+
+config ARCH_ARM
+bool "arm"
+select ARCH_HAS_ANTARES_STARTUP
+
+config ARCH_AVR
+bool "avr"
+select ARCH_HAS_ANTARES_STARTUP
+
+config ARCH_ESP8266
+bool "esp8266"
+
+config ARCH_GBZ80
+bool "gbz80"
+
+config ARCH_MIPS
+bool "mips"
+
+config ARCH_MSP430
+bool "msp430"
+select ARCH_HAS_ANTARES_STARTUP
+
+config ARCH_NATIVE
+bool "native"
+select ARCH_HAS_ANTARES_STARTUP
+
+config ARCH_PIC32
+bool "pic32"
+

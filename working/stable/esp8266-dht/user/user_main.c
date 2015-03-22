@@ -1,0 +1,60 @@
+/*
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * Jeroen Domburg <jeroen@spritesmods.com> wrote this file. As long as you retain 
+ * this notice you can do whatever you want with this stuff. If we meet some day, 
+ * and you think this stuff is worth it, you can buy me a beer in return. 
+ * ----------------------------------------------------------------------------
+ */
+
+#include "espmissingincludes.h"
+#include "osapi.h"
+
+#include "ets_sys.h"
+#include "httpd.h"
+#include "io.h"
+#include "dht.h"
+#include "httpdespfs.h"
+#include "cgi.h"
+#include "cgiwifi.h"
+#include "cgininja.h"
+#include "stdout.h"
+#include "wifi.h"
+#include "tempnew.h"
+#include "hcsr04.h"
+#include "config_store.h"
+
+HttpdBuiltInUrl builtInUrls[]={
+	{"/", cgiRedirect, "/index.tpl"},
+	{"/dht22.tpl", cgiEspFsTemplate, tplDHT},
+	{"/index.tpl", cgiEspFsTemplate, tplIndex},
+
+	//Routines to make the /wifi URL and everything beneath it work.
+	{"/wifi", cgiRedirect, "/wifi/wifi.tpl"},
+	{"/wifi/", cgiRedirect, "/wifi/wifi.tpl"},
+	{"/wifi/wifiscan.cgi", cgiWiFiScan, NULL},
+	{"/wifi/wifi.tpl", cgiEspFsTemplate, tplWlan},
+	{"/wifi/connect.cgi", cgiWiFiConnect},
+
+    {"/ninja", cgiRedirect, "/ninja/ninja.tpl"},
+    {"/ninja/", cgiRedirect, "/ninja/ninja.tpl"},
+    {"/ninja/ninja.cgi", cgiNinjaConf, NULL},
+    {"/ninja/ninja.tpl", cgiEspFsTemplate, tplNinjaConf},
+
+	{"*", cgiEspFsHook, NULL}, //Catch-all cgi function for the filesystem
+	{NULL, NULL, NULL}
+};
+
+
+void user_init(void) {
+	stdoutInit();
+	ioInit();
+	DHTInit(SENSOR_DHT11, 10000);
+	httpdInit(builtInUrls, 80);
+    wifiCheck();
+    tempnewInit();
+    HCSR04Init();
+    config_init();
+	os_printf("\nReady\n");
+
+}

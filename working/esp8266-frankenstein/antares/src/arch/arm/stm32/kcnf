@@ -1,0 +1,243 @@
+comment "Run 'make probe' to detect some things automatically"
+
+config HAS_USB
+bool 
+
+config HAS_OTG
+bool
+
+config STM32F10X
+bool
+
+choice
+prompt "STM32 Family"
+
+config STM32F1X
+bool "STM32F1xx Series"
+
+config STM32F4X
+bool "STM32F4xx Series"
+endchoice
+
+if STM32F1X
+choice 
+prompt "STM32F1xx Subfamily"
+
+config STM32F10X_LD  
+bool "STM32F1X Low density devices"
+select STM32F10X
+select HAS_USB
+
+config STM32F10X_LD_VL 
+bool "STM32F1X Low density Value Line devices"
+select STM32F10X
+
+config STM32F10X_MD 
+bool "STM32F1X Medium density devices"
+select STM32F10X
+select HAS_USB
+
+config STM32F10X_MD_VL 
+bool "STM32F1X Medium density Value Line devices"
+select STM32F10X
+
+config STM32F10X_HD 
+bool "STM32F1X High density devices "
+select STM32F10X
+select HAS_USB
+
+config STM32F10X_HD_VL 
+bool "STM32F1X High density value line devices"
+select STM32F10X
+
+config STM32F10X_XL 
+bool "STM32F1X XL-density devices "
+select STM32F10X
+select HAS_USB
+
+config STM32F10X_CL  
+bool "STM32F1X Connectivity line devices"
+select STM32F10X
+select HAS_OTG
+
+endchoice
+endif
+
+if STM32F4X
+choice
+prompt "STM32F4xx Subfamily"
+
+config STM32F401XX
+bool "STM32F401xx devices"
+
+config STM32F40_41XXX
+bool "STM32F40xxx/41xxx devices"
+
+config STM32F427_437XX
+bool "STM32F427xx/437xx devices"
+
+config STM32F429_439XX
+bool "STM32F429xx/439xx devices"
+
+endchoice
+endif
+
+config STM32_HSE_VALUE
+int "HSE (Crystal) value in Hz"
+default 8000000
+help
+	Use this to set the crystal freq accordingly. 
+	It is used in some periph libs, and in regular 
+	'SystemInit' function
+
+if STM32F1X
+choice
+prompt "Target frequency"
+
+config STM32_FREQ_72
+bool "72 Mhz"
+depends on !STM32F10X_LD_LV && !STM32F10X_MD_VL && !STM32F10X_HD_VL
+
+config STM32_FREQ_56
+bool "56 Mhz"
+depends on !STM32F10X_LD_LV && !STM32F10X_MD_VL && !STM32F10X_HD_VL
+
+config STM32_FREQ_48
+bool "48 Mhz"
+depends on !STM32F10X_LD_LV && !STM32F10X_MD_VL && !STM32F10X_HD_VL
+
+config STM32_FREQ_36
+bool "36 Mhz"
+depends on !STM32F10X_LD_LV && !STM32F10X_MD_VL && !STM32F10X_HD_VL
+
+config STM32_FREQ_24
+bool "24 Mhz"
+
+config STM32_FREQ_HSE
+bool "Use HSE"
+
+endchoice
+endif
+
+if STM32F4X
+
+if STM32F401XX
+comment "Target frequency for your device is 84 MHz"
+endif
+
+if STM32F40_41XXX
+comment "Target frequency for your device is 168 MHz"
+endif
+
+if STM32F427_437XX || STM32F429_439XX
+comment "Target frequency for your device is 180 MHz"
+endif
+
+endif
+
+menu "Code placement settings"
+
+config STM32_RUN_IN_RAM
+bool "Generate code to run in RAM"
+
+#config STM32_FPIC
+#bool "Generate Position Independent code"
+#help
+#	WARNING.
+#	You still have to specify the offsets, since init
+#	code must know where to pick the isr table from
+#	Or you can disable the startup code and linking, btw.
+
+menuconfig STM32_OVERRIDE_BASES
+bool "Overrride FLASH&RAM Base adresses"
+
+if STM32_OVERRIDE_BASES
+
+	config STM32_FLASH_BASE
+        hex	"Base address of flash memory"
+	default 0x08000000 if MCU_STM32
+
+	config STM32_RAM_BASE
+       	hex	"Base address of RAM memory"
+	default 0x20000000 if MCU_STM32
+
+endif
+
+
+menu "Set RAM and FLASH sizes"
+	config STM32_FLASH_LEN
+	hex	"FLASH size"
+	default 0x80000
+
+	config STM32_RAM_LEN
+	hex	"RAM size"
+	default 0x10000 
+endmenu
+
+menuconfig STM32_SET_OFFSETS
+bool "Configure code to run at offsets"
+
+if STM32_SET_OFFSETS
+
+   	config STM32_FLASH_OFFSET
+	hex	"FLASH offset"
+	default 0x5000
+
+	config STM32_RAM_OFFSET
+	hex	"RAM offset"
+	default 0x0 
+endif
+
+endmenu
+
+
+source "antares/src/arch/arm/stm32/library-f1x/kcnf"
+source "antares/src/arch/arm/stm32/library-f4x/kcnf"
+source "antares/src/arch/arm/stm32/usb-f1x/kcnf"
+
+
+menuconfig STM32_EXTRA
+bool "STM32 Extra drivers"
+
+if STM32_EXTRA
+	menuconfig STM32_SPIFLASH
+	bool "SPI Flash driver"
+	if STM32_SPIFLASH
+		comment "ST's driver is ugly. Only one dev is supported"
+		comment "It should be rewritten in a more portable manner"
+		
+		config STM32_SPIFLASH_GPIN
+		string "CS PIN"
+		default "GPIO_Pin_1"
+		
+		config STM32_SPIFLASH_GPORT
+		string "CS PORT"
+		default "GPIOA"
+		
+		config STM32_SPIFLASH_SPI
+		string "SPI device"
+		default "SPI1"		
+	endif
+	menuconfig STM32_UARTIO
+	bool "USART STDIO driver for newlib"
+	help
+		Provides simple io routines to USART
+		use this for printk/printf to uart
+
+	if STM32_UARTIO
+
+	comment "Please, take care to initialise uart yourself"
+	config STM32_UARTIO_PORT
+	int "USART"
+	default 1
+
+	endif	
+	
+endif 
+
+config STM32_FULL_ASSERT
+bool "Use full assert in STM32 periph lib"
+
+
+
+

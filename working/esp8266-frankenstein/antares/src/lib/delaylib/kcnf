@@ -1,0 +1,56 @@
+config LIB_DELAY_8051
+bool 
+
+config LIB_DELAY_MSP430
+bool 
+
+config LIB_DELAY_AVR
+bool 
+
+config LIB_DELAY_ARM
+bool 
+
+config LIB_DELAY_PIC32
+bool 
+
+
+menuconfig LIB_DELAY
+bool "DelayLib"
+select LIB_DELAY_8051   if ARCH_8051
+select LIB_DELAY_AVR    if ARCH_AVR
+select LIB_DELAY_ARM    if ARCH_ARM
+select LIB_DELAY_PIC32  if ARCH_PIC32
+select LIB_DELAY_MSP430 if ARCH_MSP430
+help
+	A small convienience library for programmable
+	delays. Use with care where appropriate. 
+
+
+if LIB_DELAY
+
+if ARCH_8051
+comment "Nothing to tune for 8051, everything should work out of the box"
+endif
+
+if ARCH_AVR
+comment "Nothing to tune for AVR, everything should work out of the box"
+endif
+
+
+if ARCH_AVR
+comment "Nothing to tune for ARM, everything should work out of the box"
+endif
+
+	
+if ARCH_MSP430
+
+   config MSP430_DELAYLIB_UNITSIZE
+   int "Time unit size"
+   depends on F_DYNAMIC
+   default 1024
+   help
+	Delay will be calculated using this unit chunk
+	as base. 
+
+endif
+endif

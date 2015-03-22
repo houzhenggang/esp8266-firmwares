@@ -1,0 +1,89 @@
+menuconfig DEPLOY_AVRDUDE
+bool "avrdude"
+depends on ARCH_AVR || ARCH_PIC32
+
+  if DEPLOY_AVRDUDE
+
+  config DEPLOY_AVRDUDE_OVR
+  bool "Override part info for avrdude"
+  
+  config DEPLOY_AVRDUDE_PART
+  string "Avrdude part name"
+  depends on DEPLOY_AVRDUDE_OVR
+  
+  choice 
+  prompt "AVR programmer"
+  
+  source "antares/deploy/avrdude/proglist.kcnf"
+  
+  endchoice
+
+  menuconfig  DEPLOY_AVRDUDE_SER
+  bool "Specify serial port params"
+  
+  if DEPLOY_AVRDUDE_SER
+
+  config DEPLOY_AVRDUDE_RESET
+  bool "Reset device to bootloader via sighup"
+  default n
+  help
+	Some devices (chipkit) need sighup to reset to
+	bootloader mode. Checking this will issue reset
+	prior to doing anything
+
+  config DEPLOY_AVRDUDE_PORT
+  string "Port"
+  default "/dev/ttyUSB0"
+
+  config DEPLOY_AVRDUDE_BAUDRATE
+  int "Port speed"
+  default 115200
+
+  endif
+
+
+  menu "Fuse settings"
+
+  comment "To actually burn the fuses pass WFUSES=y env variable"
+  comment "e.g. make WFUSES=y deploy-avrdude"
+  comment "ProTIP: Tripple check fuse values to avoid bricking uC"
+
+  config DEPLOY_AVRDUDE_FSLOW
+  bool "Deploy fuse bits with a slow bit clock"
+
+  config DEPLOY_AVRDUDE_FL
+  bool "Write low fuse bits"
+
+  config DEPLOY_AVRDUDE_FH
+  bool "Write high fuse bits"
+
+  config DEPLOY_AVRDUDE_FE
+  bool "Write extended fuse bits"
+
+  config DEPLOY_AVRDUDE_FLV
+  depends on DEPLOY_AVRDUDE_FL
+  hex "low fuse bits"
+
+  config DEPLOY_AVRDUDE_FHV
+  depends on DEPLOY_AVRDUDE_FH
+  hex "high fuse bits"
+
+  config DEPLOY_AVRDUDE_FEV
+  depends on DEPLOY_AVRDUDE_FE
+  hex "extended fuse bits"
+
+
+  endmenu
+
+
+  config DEPLOY_AVRDUDE_COMMANDLINE
+  string "avrdude additional commandline (read help)"
+  help
+    MCU and filename will be autofilled. 
+    Anything not related to filename and MCU should go in here
+    TODO: Moar friendly menu
+
+  endif
+
+
+

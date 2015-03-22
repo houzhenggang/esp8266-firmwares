@@ -1,0 +1,56 @@
+include .config
+include make/Makefile.lib
+
+targets-y=src/
+TOP_DIR=./
+
+
+
+# define ldmakes
+# $(eval subdirs=$(addprefix $(1),$(filter %/,$(targets-y))))
+# $(eval targets+=$(addprefix $(1),$(filter-out %/,$(targets-y))))
+# $(eval targets-y= )
+# $(foreach dir, $(subdirs),$(eval alien_path=$(dir))$(eval include $(dir)Makefile) $(call ldmakes,$(dir)))
+# endef
+
+load_makes=$(call ldmakes, $(TOP_DIR)) 
+targets_dl=$(add_prefix)
+
+
+#include Toolchain variables in our build
+$(eval $(call include_toolchain,$(TOOLCHAIN),vars))
+
+debug: $(load_makes)
+	@echo "We have aliens here: $(alien)"
+help:
+	@echo "Alien code management util"
+	@echo "Currently enabled aliens:"
+	@echo $(aliens)
+
+export CC CXX LD AS AR AS OBJCOPY OBJDUMP SIZE DISAS
+
+download: $(load_makes)	$(alien)
+	$(foreach target,$(alien),$(Q)$(MAKE) -f $(target) alien_dir=$(dir $(target)) download)
+	@echo "Done"
+
+patch: $(load_makes)	$(alien)
+	$(foreach target,$(alien),$(Q)$(MAKE) -f $(target) alien_dir=$(dir $(target)) patch)
+	@echo "Done"
+
+update: $(load_makes)	$(alien)
+	$(foreach target,$(alien),$(Q)$(MAKE) -f $(target) alien_dir=$(dir $(target)) V=9 update)
+	@echo "Done"
+
+build: $(load_makes)	$(alien)
+	$(foreach target,$(alien),$(Q)$(MAKE) -f $(target) alien_dir=$(dir $(target)) V=9 build)
+	@echo "Done"
+
+clean: $(load_makes)	$(alien)
+	$(foreach target,$(alien),$(Q)$(MAKE) -f $(target) alien_dir=$(dir $(target)) clean)
+	@echo "Done"
+
+mrproper: $(load_makes)	$(alien)
+	$(foreach target,$(alien),$(Q)$(MAKE) -f $(target) alien_dir=$(dir $(target)) mrproper)
+	@echo "Done"
+
+	

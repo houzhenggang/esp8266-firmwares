@@ -1,0 +1,16 @@
+menuconfig DEPLOY_STLINK
+bool "stlink"
+depends on ARCH_ARM
+
+if DEPLOY_STLINK
+
+  config DEPLOY_STLINK_ROOT
+  bool "Run stlink as root"
+
+  config DEPLOY_STLINK_DEBUG
+  bool "Leave gdb running interactively"
+  help
+	Pick this if you are going to debug anything 
+	with openocd
+
+endif

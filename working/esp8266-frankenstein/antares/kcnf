@@ -1,0 +1,132 @@
+mainmenu "Antares Firmware Config"
+
+source antares/features.kcnf
+
+menu "Target platform settings"
+
+	choice
+	prompt "Target architecture"
+		source tmp/arch.kcnf
+	endchoice
+	
+source tmp/all-arch.kcnf
+endmenu
+
+menu "Toolchain settings"
+source "antares/toolchains/kcnf"
+endmenu
+
+
+menu "Libraries and drivers"
+
+config SHOW_BROKEN
+bool "Show broken, incomplete and experimental stuff"
+
+source "antares/src/lib/kcnf"
+endmenu
+
+
+menu "Project Settings"
+source "kcnf"
+endmenu
+
+menu "Deployment settings"
+     config DEPLOY_ROOT
+     bool "Run deploy commands with superuser priveledges"
+     help
+	Pick this, if you're missing udev rules
+
+comment "Pick the deployment methods you need below"
+
+source "tmp/all-deploy.kcnf"
+comment "Custom deployment methods"
+source "tmp/all-edeploy.kcnf"
+
+endmenu
+
+
+menu "Build System Configuration"
+
+  config MAKE_DEFTARGET
+  string "Default make target"
+  default "menuconfig"
+  
+  config DEPLOY_DEFTARGET
+  string "Default deployment target"
+  default "help"
+  help
+    The deployment target(s) will be run, if you type
+    'make deploy' instead of 
+
+  config NOCOLOR
+  bool "Do not use color in terminal"
+  default n
+
+  config THREADED
+  bool "Explicitly set number of threads"
+
+  config THREADS
+  depends on THREADED
+  int "Number of threads to use (-jX)"
+
+  config IMAGE_FILENAME
+  string "Output image name"
+  default "antares"
+  help
+   In case you want to store prebuilt images
+   under some name. They won't be purged 
+   automatically, so you can deploy them later.
+   Extensions will appended automatically.
+   
+  config IMAGE_DIR
+  string "Output image dir"
+  default "images"
+  help
+   Directory to store output images, elfs
+   disassembly and such stuff
+
+  config NEED_GENERATE
+  bool "Do code-generation pass"
+  help
+   Autoselected by stuff that needs it.
+   If your project needs code generation BEFORE
+   actual build (gen-y) tick it
+   
+  config BUILD_VERBOSE
+  bool "Verbose build"
+
+  config BUILD_VERBOSE_D
+  bool "Even more verbose build"
+  depends on BUILD_VERBOSE
+  
+endmenu
+
+menu "Version Information"
+comment "+++ For reference only +++"
+comment "All values below are to be filled by Make scripts"
+comment "Use make set_version to change"
+
+  config VERSION_MAJOR
+  string "Major Version"
+  default 0
+
+  config VERSION_MINOR
+  string "Major Version"
+  default 1
+
+  config VERSION_CODENAME
+  string "CodeName"
+  default "Lucky Lady"
+
+config VERSION_STRING
+  string "Version string"
+  default "to be genned"
+
+config VERSION_GIT
+  string "GIT Revision"
+  default "to be genned"
+
+endmenu
+
+
+

@@ -1,0 +1,40 @@
+menu "Wireless devices"
+
+menuconfig LIB_RF24
+bool "nRF24L01 Support"
+
+if LIB_RF24
+
+   config LIB_RF24_DEBUG
+   int "Debugging verbosity (0-4)"
+   default 0
+   range 0 4 
+
+   config LIB_RF24_SIZEOPT
+   bool "Agressive size optimisation [DANGEROUS]"
+   help
+	This is a hacky option, that tries to make the 
+	library smaller (for bootloaders). On AVRs this can
+	reduce code size at up to one third. 
+	Note: Only ONE instance of rf24 is supported when 
+	running in this mode.
+
+   config LIB_RF24_SWEEP
+   bool "RF Sweeper library"
+   default y
+   help
+	Utility functions to scan the spectrum, auto-pick unused channels, etc. 
+
+   choice
+   prompt "RF24 probe method"
+
+   config LIB_RF24_SWEEP_CARRIER
+   bool "Test for carrier"
+
+   config LIB_RF24_SWEEP_RPD
+   bool "Test for RPD ('+' hardware only)"
+
+   endchoice
+endif
+
+endmenu

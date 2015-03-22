@@ -1,0 +1,158 @@
+menuconfig LIB_ANTARES_CORE
+bool "Antares core libraries"
+default y
+
+if LIB_ANTARES_CORE	
+
+   config ANTARES_STARTUP
+   bool "Antares startup code"
+   depends on ARCH_HAS_ANTARES_STARTUP
+   default y
+   help
+	Provides a main() and an easy way to group
+   	initialisations with ANTARES_INIT/ANTARES_APP
+   	macros with nearly no size impact.
+
+   config LIB_INITCALL
+   bool "Dependency-based initcall mechanism"
+   depends on ANTARES_STARTUP
+   default y
+   help
+	Provides ANTARES_INITCALL_LOW/HIGH variants
+	that handle init dependencies in runtime
+	see doc/startup.txt
+
+   config LIB_INITCALL_DEBUG
+   bool "initcall debugging"
+   depends on LIB_INITCALL
+   help
+	Enables initcall debugging to system console
+
+   menuconfig LIB_TMGR
+   bool "Simple cron and uptime counter [NEEDS TESTING]"
+
+   if LIB_TMGR
+      source "antares/src/lib/ulc/kcnf"
+   endif
+
+endif
+
+source "antares/src/lib/console/kcnf"
+
+menuconfig LIB_NLIBSTUBS
+#TODO: Depend on ARCH_HAS_NEWLIB
+depends on ARCH_ARM || ARCH_ESP8266
+bool "Configure newlib stubs"
+
+if LIB_NLIBSTUBS
+	comment "You will probably want to write your own for one or more"
+	comment "These do actually nothing"
+	
+	config LIB_NLIBSTUBS_ENV
+	bool "Environment"
+		help 
+		Include an empty environment list
+	
+	config LIB_NLIBSTUBS_EXIT
+	bool "_exit"
+		help 
+		Provide an infinite loop for exit()
+	
+	config LIB_NLIBSTUBS_CLOSE
+	bool "_close"
+	
+	config LIB_NLIBSTUBS_EXECVE
+	bool "_execve"
+	
+	config LIB_NLIBSTUBS_FORK
+	bool "_fork"
+	
+	config LIB_NLIBSTUBS_FSTAT
+	bool "_fstat"
+	
+	config LIB_NLIBSTUBS_ISATTY
+	bool "_isatty"
+	
+	config LIB_NLIBSTUBS_KILL
+	bool "_kill"
+	
+	config LIB_NLIBSTUBS_LINK
+	bool "_link"
+	
+	config LIB_NLIBSTUBS_LSEEK
+	bool "_lseek"
+
+	config LIB_NLIBSTUBS_GETPID
+	bool "_getpid"
+	
+	config LIB_NLIBSTUBS_SBRK
+	bool "_sbrk"
+
+	config LIB_NLIBSTUBS_STAT
+	bool "_stat"
+	
+	config LIB_NLIBSTUBS_TIMES
+	bool "_times"
+
+	config LIB_NLIBSTUBS_UNLINK
+	bool "_unlink"
+	
+	config LIB_NLIBSTUBS_WAIT
+	bool "_wait"
+
+	config LIB_NLIBSTUBS_WRITE
+	bool "_write"
+	
+	config LIB_NLIBSTUBS_READ
+	bool "_read"
+	
+	endif
+
+
+source "antares/src/lib/wireless/kcnf"
+
+
+menu "Data storage devices"
+
+    config LIB_SPISD
+    bool "SD/SDHC Card over SPI library"
+    help
+	This library allows easy interfacing with SD and SDHC cards over SPI
+
+endmenu 
+
+menu "Input devices"
+     config LIB_CAPSENSE
+     bool "Generic capsense driver"
+
+     if LIB_CAPSENSE
+     config LIB_CAPSENSE_NUMSAMPLES
+     int "Number of samples"
+     default 32
+     
+     endif
+
+endmenu
+
+menu "Misc drivers and libraries"
+
+     config LIB_XSSCU
+     bool "Xilinx FPGA configuration upload driver"
+     help
+	  This driver implements bit-banged Xilinx Slave Serial configuraton mode
+	  and allows you to configure a wide range of FPGAs.
+
+endmenu 
+
+menu "Data transfer protocols"
+
+config LIB_XMODEM
+bool "Simple XMODEM implementation [BROKEN]"
+
+endmenu
+
+
+source "antares/src/lib/delaylib/kcnf"
+source "antares/src/lib/stlinky/kcnf"
+source "antares/src/lib/urpc/kcnf"
+source "antares/src/lib/contrib/kcnf"

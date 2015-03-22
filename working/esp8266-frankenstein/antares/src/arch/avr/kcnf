@@ -1,0 +1,64 @@
+if ARCH_AVR
+
+
+choice
+depends on ARCH_AVR
+prompt "Select MCU variant"
+  
+source "antares/src/arch/avr/mcu_selection.kcnf"
+
+endchoice
+
+config F_CPU
+int "CPU frequency in Hz"
+default 8000000
+
+
+config AVR_BLDR
+bool "Run in bootloader section"
+
+config AVR_BLDADDR
+depends on AVR_BLDR
+hex "Bootloader address"
+
+config AVR_OLD_DELAY
+bool "Use backwards-compatible delay implementation"
+help
+	Use it if you want pass variables to 
+	_delay_ms and friends
+
+config AVR_EXTRA_SIZE_OPT
+bool "Enable extra size optimisations"
+
+choice 
+prompt "vfprintf implementation"
+
+config AVR_VFPRINTF_NONE
+bool "none/default"
+
+config AVR_VFPRINTF_MIN
+bool "minimal"
+
+config AVR_VFPRINTF_FULL
+bool "full (with floats)"
+
+endchoice
+
+
+choice 
+prompt "vfscanf implementation"
+
+config AVR_VFSCANF_NONE
+bool "none/default"
+
+config AVR_VFSCANF_MIN
+bool "minimal"
+
+config AVR_VFSCANF_FULL
+bool "full (with floats)"
+
+endchoice
+
+endif
+
+

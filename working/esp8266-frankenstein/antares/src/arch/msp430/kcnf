@@ -1,0 +1,24 @@
+if ARCH_MSP430
+
+comment "Run 'make probe' for autodetection"
+
+choice
+
+  prompt "Select MCU variant"
+  source "antares/src/arch/msp430/mcu_database.kcnf"
+
+endchoice
+
+config F_CPU
+int "CPU Frequency in HZ (at startup)"
+default 1000000
+
+config F_DYNAMIC
+bool "Support runtime frequency changes"
+default n
+help
+	Set this to y if you want to change frequency
+	in runtime and want underlying libraries to be 
+	aware of that
+
+endif

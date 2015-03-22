@@ -1,0 +1,256 @@
+menu "Console and IO"
+
+menuconfig LIB_EARLYCON
+bool "Early console"
+
+
+if LIB_EARLYCON
+
+config LIB_EARLYCON_STM32SERIAL
+        bool
+choice 
+prompt "Select early console backend"
+
+config LIB_EARLYCON_AVRSERIAL
+        bool "AVR Hardware serial port"
+        depends on ARCH_AVR
+
+config LIB_EARLYCON_VUSBLOWSERIAL
+        bool "VUSB serial console emulation (LIMITED! READ HELP!)"
+        depends on ARCH_AVR && CONTRIB_VUSB
+	help
+		Using this is only possible when interrupts are ENABLED!
+		DO NOT call it in ANTARES_INIT_LOW()
+		How to use this: 
+		* Configure vusb
+		* Provide your own usb_reconnect() function. We'll call it
+ 		  upon the first usage of io. 
+		* Compile the host app, (see antares/host-utils/vusb-serial-term)
+		
+
+config LIB_EARLYCON_STCUART
+        bool "STC UART"
+        depends on ARCH_8051_STC
+
+config LIB_EARLYCON_NATIVE
+        bool "Native stdio wrapper"
+        depends on ARCH_NATIVE
+
+config LIB_EARLYCON_STLINKY
+        bool "STLinky serial terminal"
+        depends on LIB_STLINKY
+
+config LIB_EARLYCON_MSP430SOFTSERIAL
+        bool "MSP430 SoftSerial (TX Only)"
+        depends on ARCH_MSP430
+
+config LIB_EARLYCON_AVRSOFTSERIAL
+        bool "AVR SoftSerial (TX Only)"
+        depends on ARCH_AVR
+
+config LIB_EARLYCON_STM32F10XSERIAL
+        bool "STM32F10x Hardware Serial Port"
+        depends on ARCH_ARM && STM32F1X
+        select LIB_EARLYCON_STM32SERIAL
+
+config LIB_EARLYCON_STM32F4XXSERIAL
+        bool "STM32F4xx Hardware Serial Port"
+        depends on ARCH_ARM && STM32F4X
+        select LIB_EARLYCON_STM32SERIAL
+
+endchoice
+
+choice
+prompt "Select glue driver"
+
+config LIB_EARLYCON_GLUE_NONE
+bool "None"
+
+config LIB_EARLYCON_GLUE_AVR
+bool "AVR-libc glue driver"
+depends on ARCH_AVR
+
+config LIB_EARLYCON_GLUE_SDCC
+bool "SDCC stdio glue driver"
+depends on ARCH_8051
+
+config LIB_EARLYCON_GLUE_NEWLIB
+bool "Newlib stdio glue"
+depends on ARCH_ARM
+
+config LIB_EARLYCON_GLUE_MSP430
+bool "MSP430 libc glue driver"
+depends on ARCH_MSP430
+
+endchoice
+
+config LIB_EARLYCON_ANNOUNCE
+bool "Earlycon diagnostic messages"
+depends on LIB_PRINTK
+
+config LIB_EARLYCON_ADDCR
+bool "Auto-add \\r for each \\n"
+default y
+
+
+if LIB_EARLYCON_AVRSERIAL
+
+   config LIB_EARLYCON_AVRSERIAL_PORT
+   int "AVR serial port to use"
+   default 0
+   help
+	Leave at 0 if device has only one port
+   
+   config LIB_EARLYCON_AVRSERIAL_BAUD
+   int "Serial speed"
+   default 57600
+   help
+
+
+endif
+
+if LIB_EARLYCON_STCUART
+
+   config LIB_EARLYCON_STCUART_BAUD
+   int "Serial port speed"
+   default 57600
+
+   config LIB_EARLYCON_STCUART_USE_P1
+   bool "Use pin on P1 instead of P3"
+   default n
+
+   config LIB_EARLYCON_STCUART_IAPCHECK
+   bool "Auto-reboot to ISP mode"
+   default n
+   help
+	When N sequential 0x7f chars are received, device
+	will automatically reboot to ISP mode. 
+	Setting this to 'y' will allow you to transparently update
+	firmware on a running device without powercycling
+
+config LIB_EARLYCON_STCUART_IAPCNT
+   hex "ISP/IAP Magic byte count"
+   range 0x1 0xff
+   depends on LIB_EARLYCON_STCUART_IAPCHECK
+   default 0xff
+   help
+	Specify how many sequencial 0x7f chars should be received 
+	to trigger ISP mode
+
+	
+endif
+
+if LIB_EARLYCON_MSP430SOFTSERIAL
+
+   comment "Go above 2400 at your own risk"
+
+   config LIB_EARLYCON_MSP430_SOFTSERIAL_PIN
+   int "TX Pin number"
+   default 1
+
+   config LIB_EARLYCON_MSP430_SOFTSERIAL_PORT
+   int "TX Port number"
+   default 1
+
+   config LIB_EARLYCON_MSP430_SOFTSERIAL_BAUD
+   int "Baudrate"
+   default 2400
+
+endif
+
+if LIB_EARLYCON_AVRSOFTSERIAL
+
+   comment "Go above 2400 at your own risk"
+
+   config LIB_EARLYCON_AVR_SOFTSERIAL_PIN
+   int "TX Pin number"
+   default 1
+
+   config LIB_EARLYCON_AVR_SOFTSERIAL_PORT
+   string "TX Port Letter"
+   default "A"
+
+   config LIB_EARLYCON_AVR_SOFTSERIAL_BAUD
+   int "Baudrate"
+   default 2400
+
+endif
+
+if LIB_EARLYCON_STM32SERIAL
+        source antares/src/lib/console/stm32.kcnf
+endif
+
+endif # if LIB_EARLYCON
+
+
+menuconfig LIB_PRINTK
+bool "printk and dbg() macro support"
+
+if LIB_PRINTK
+
+      config LIB_PRINTK_TIMESTAMP
+      depends on LIB_TMGR && LIB_PRINTK
+      bool "Add a timestamp to printks"
+
+      config LIB_PRINTK_PREFIX
+      depends on LIB_PRINTK 
+      bool "Add a prefix to all printks"
+
+      config LIB_PRINTK_PREFIX_V
+      depends on LIB_PRINTK_PREFIX
+      string "Prefix"
+
+endif
+
+
+
+choice 
+prompt "Panic and asserts"
+
+config LIB_PANIC_NONE
+bool "Disabled"
+help
+	Reduces code size, removes all assert, 
+	panic, whatsoever. 
+	WARNING: With this enabled panic() does NOTHING 
+
+config LIB_PANIC
+bool "Enabled"
+help
+	Select this to properly handle panic();
+	Panics result in a plain and simple endless 
+	loop with interrupts disabled.
+	All asserts and BUG_ON macros eventually 
+	panic the system. 
+
+endchoice 
+
+if LIB_PANIC
+
+   config LIB_PANIC_PRINTOUT
+   bool "Print panic reasons"
+   depends on LIB_PRINTK
+   help
+	Prints out useful info to console, 
+	before calling user hook
+
+   config LIB_PANIC_TRACE
+   bool "Always show assert/BUG_ON traces"
+   help
+	This is a global switch. It significally 
+	increases the firmware size. All assert and 
+	BUG_ON traps will show file and line info.
+	See panic.txt to find out how to limit this 
+	to one file.  
+
+   config LIB_PANIC_HOOK
+   bool "Provide a user hook to catch panics"
+   help
+	When this checked, implement a
+	void panic_user_hook(const char* why, ...); 
+	to catch and handle panics.
+
+endif
+
+
+endmenu

@@ -1,0 +1,43 @@
+#!/bin/bash
+
+EXAMPLES_DIR=~/.antares_examples
+EXAMPLES_URL=https://github.com/nekromant/antares-examples.git
+
+checkout_examples(){
+    echo "It looks like the examples repository hasn't been downloaded yet."
+    echo "Do you want me to clone the examples repository? [y/n]"
+    read -n1 choice
+    if [ "$choice" == "y" ]; then
+	git clone $EXAMPLES_URL $EXAMPLES_DIR
+    fi
+}
+
+[ -d $EXAMPLES_DIR ] || checkout_examples
+
+if [ "$1" == "update" ]; then
+    echo "Pulling new examples (if any) from git"
+    cd $EXAMPLES_DIR && git pull
+    exit
+fi
+
+N=`ls -la|wc -l`
+if [ "$N" -gt "3" ]; then
+    echo "Looks like the folder is not empty"
+    echo "Please, run this app in an empty folder"
+    exit 1;
+fi
+
+PDIR=`pwd`
+cd $EXAMPLES_DIR
+echo "Pick an example project you want to start with"
+select p in `find .  -iname .config|sed 's/\/\.config//'`; do
+    cd $PDIR
+    cp -Rf $EXAMPLES_DIR/$p/* .
+    cp  $EXAMPLES_DIR/$p/.config .config
+    cp $EXAMPLES_DIR/.gitignore .
+    git init .
+    git add .gitignore Makefile src/ kcnf
+    make
+    echo "Template installed, repo created. Please do the initial git commit now"
+    exit 0
+done
