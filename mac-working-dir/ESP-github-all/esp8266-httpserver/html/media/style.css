@@ -1,0 +1,81 @@
+body {
+	background-color: #eeeeee;
+    font-family: "Myriad Pro", "Myriad Web", "Tahoma", "Helvetica", "Arial", sans-serif;
+}
+
+#main {
+    color: #ffffff;
+    background-color: #3b3f4f;
+	width: 400px;
+	margin: 0 auto;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+#input-label {
+    padding: 15px 4%;
+    float: left;
+    display: block;
+    width: 92%;
+}
+
+#content {
+    float: left;
+    display: block;
+    width: 100%;
+}
+
+#input-list {
+    border:1px solid #e7e7e7;
+    padding: 15px 4%;
+    background: #FFF;
+    color: #000000;
+    float: left;
+    display: block;
+    width: 92%;
+}
+
+.inputrow {
+    padding: 8px 2px 2px 2px;
+    float: left;
+    display: block;
+    width: 100%;
+    border-bottom: 1px dashed #eeeeee;
+}
+
+.cell-label {
+    float: left;
+    display: block;
+    width: 80%;
+    height: 20px;
+
+}
+
+.cell-value {
+    float: left;
+    display: block;
+    width: 20%;
+    height: 16px;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.cell-value-0 {
+    background: #4a89dc;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    margin: -2px;
+}
+
+.cell-value-1 {
+    background: #e9573f;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    margin: -2px;
+}
+
+.icon {
+	background-image: url("icons.png");
+	background-color: transparent;
+	width: 32px;
+	height: 32px;
+	display: inline-block;
+}
